@@ -1,11 +1,9 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/**
+ * Copyright 2017 Azuki Framework.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -17,89 +15,87 @@
  */
 package org.azkfw.stepcounter.scanner;
 
+import static org.azkfw.stepcounter.utils.AzukiUtil.isBlank;
+import static org.azkfw.stepcounter.utils.AzukiUtil.isNotBlank;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.azkfw.stepcounter.reader.BlankTokenReader;
-import org.azkfw.stepcounter.reader.MultiLineCommentTokenReader;
-import org.azkfw.stepcounter.reader.ReturnLineTokenReader;
-import org.azkfw.stepcounter.reader.SeparatorTokenReader;
-import org.azkfw.stepcounter.reader.SingleLineCommentTokenReader;
-import org.azkfw.stepcounter.reader.StringTokenReader;
+import org.azkfw.stepcounter.reader.TokenReadException;
 import org.azkfw.stepcounter.reader.TokenReader;
+import org.azkfw.stepcounter.selector.FileSelector;
+import org.azkfw.stepcounter.selector.FileSelectorEvent;
+import org.azkfw.stepcounter.selector.FileSelectorListener;
 import org.azkfw.stepcounter.token.Token;
 import org.azkfw.stepcounter.utils.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * @author kawakicchi
+ */
 public class DefaultTokenScanner extends AbstractTokenScanner {
 
-	private final List<TokenReader> readers;
+	private static final Logger logger = LoggerFactory.getLogger(DefaultTokenScanner.class);
 
-	private File file;
+	private final FileSelector selector;
+	private final TokenReader reader;
 
-	public DefaultTokenScanner() {
-		readers = new ArrayList<TokenReader>();
-
-		readers.add(new SingleLineCommentTokenReader());
-		readers.add(new MultiLineCommentTokenReader());
-		readers.add(new StringTokenReader());
-		readers.add(new ReturnLineTokenReader());
-		readers.add(new SeparatorTokenReader());
-		readers.add(new BlankTokenReader());
-	}
-
-	public void setFile(final File file) {
-		this.file = file;
+	public DefaultTokenScanner(final TokenReader reader, final FileSelector selector) {
+		this.reader = reader;
+		this.selector = selector;
 	}
 
 	@Override
 	protected final void doScan() {
-		try {
-			String data = FileUtils.readFileToString(file);
-			doScan(data);
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
+		selector.addSelectorListener(new FileSelectorListener() {
+			@Override
+			public void selectorFindFile(File file, FileSelectorEvent e) {
+
+				try {
+					callStartedFile(file);
+
+					logger.debug("Scan -> {}", file.getAbsolutePath());
+					String data = FileUtils.readFileToString(file);
+					doScan(file, data);
+
+				} catch (TokenReadException ex) {
+					ex.printStackTrace();
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				} finally {
+					callFinishedFile(file);
+				}
+			}
+		});
+		selector.select();
 	}
 
-	private void doScan(final String data) {
+	private void doScan(final File file, final String data) throws TokenReadException {
+
 		StringBuffer buffer = new StringBuffer();
-		int bufferIndex = 0;
-
-		TokenReader activeReader = null;
+		int bufferIndex = 0; // トー化に該当しない最初の位置を保持
+		boolean active = false;
 		for (int i = 0; i < data.length(); i++) {
-			if (null == activeReader) {
-				for (TokenReader reader : readers) {
-					if (reader.is(i, data)) {
-						activeReader = reader;
-						activeReader.clear();
-						break;
-					}
-				}
-				if (null != activeReader) {
-					if (0 < buffer.length()) {
-
-						callFindToken(new Token(bufferIndex, buffer.toString()));
-
+			if (!active) {
+				active = reader.is(i, data);
+				if (active) {
+					if (isNotBlank(buffer)) {
+						callFindToken(new Token(bufferIndex, buffer.toString()), file);
 						buffer = new StringBuffer();
 					}
 				}
 			}
 
-			if (null != activeReader) {
-				int j = activeReader.read(i, data);
-				if (-1 != j) {
-					i = j - 1;
+			if (active) {
+				int j = reader.read(i, data);
+				i = j - 1;
 
-					callFindToken(activeReader.getToken());
+				callFindToken(reader.getToken(), file);
 
-					activeReader = null;
-				} else {
-					// TODO: error
-				}
+				active = false;
 			} else {
-				if (0 == buffer.length()) {
+				if (isBlank(buffer)) {
 					bufferIndex = i;
 				}
 				buffer.append(data.charAt(i));
@@ -107,8 +103,8 @@ public class DefaultTokenScanner extends AbstractTokenScanner {
 
 		}
 
-		if (0 < buffer.length()) {
-			callFindToken(new Token(bufferIndex, buffer.toString()));
+		if (isNotBlank(buffer)) {
+			callFindToken(new Token(bufferIndex, buffer.toString()), file);
 		}
 	}
 

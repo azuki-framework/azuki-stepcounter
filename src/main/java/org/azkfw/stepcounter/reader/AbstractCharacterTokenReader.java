@@ -20,28 +20,30 @@ import org.azkfw.stepcounter.token.Token;
 /**
  * @author kawakicchi
  */
-public class ReturnLineTokenReader extends AbstractTokenReader {
+public abstract class AbstractCharacterTokenReader extends AbstractTokenReader {
 
 	private int index;
 
 	private StringBuffer string;
 
-	public ReturnLineTokenReader() {
+	private final char[] chars;
+
+	public AbstractCharacterTokenReader(final char... chars) {
+		this.chars = chars;
 		clear();
 	}
 
 	@Override
-	public void clear() {
+	public final void clear() {
 		index = -1;
 		string = new StringBuffer();
 	}
 
 	@Override
-	public boolean is(final int index, final String data) {
+	public final boolean is(final int index, final String data) {
 		if (data.length() > index) {
-
 			char c = data.charAt(index);
-			if (isAnyMatch(c, '\r', '\n')) {
+			if (isAnyMatch(c, chars)) {
 				return true;
 			}
 		}
@@ -49,27 +51,17 @@ public class ReturnLineTokenReader extends AbstractTokenReader {
 	}
 
 	@Override
-	public int read(final int index, final String data) {
+	public final int read(final int index, final String data) {
 		this.index = index;
 
-		char c1 = data.charAt(index);
-		if (index + 1 < data.length()) {
-			if ('\r' == c1) {
-				char c2 = data.charAt(index + 1);
-				if ('\n' == c2) {
-					string.append(c1);
-					string.append(c2);
-					return index + 2;
-				}
-			}
-		}
+		char c = data.charAt(index);
+		string.append(c);
 
-		string.append(c1);
 		return index + 1;
 	}
 
 	@Override
-	public Token getToken() {
+	public final Token getToken() {
 		return new Token(index, string.toString(), this.getClass());
 	}
 }

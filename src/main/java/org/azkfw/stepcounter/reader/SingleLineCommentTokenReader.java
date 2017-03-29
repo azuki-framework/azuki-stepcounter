@@ -1,11 +1,9 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/**
+ * Copyright 2017 Azuki Framework.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -19,41 +17,49 @@ package org.azkfw.stepcounter.reader;
 
 import org.azkfw.stepcounter.token.Token;
 
+/**
+ * @author kawakicchi
+ */
 public class SingleLineCommentTokenReader extends CommentTokenReader {
 
 	private int index;
 
 	private StringBuffer string;
 
+	private final String commentPrefix;
+
 	public SingleLineCommentTokenReader() {
+		commentPrefix = "//";
 		clear();
 	}
 
+	@Override
 	public void clear() {
 		index = -1;
 		string = new StringBuffer();
 	}
 
+	@Override
 	public boolean is(final int index, final String data) {
-		if (data.length() > index + 1) {
-
-			char c1 = data.charAt(index);
-			char c2 = data.charAt(index + 1);
-
-			if ('/' == c1 && '/' == c2) {
+		if (isGetting(commentPrefix.length(), index, data)) {
+			final String str = data.substring(index, index + commentPrefix.length());
+			if (commentPrefix.equals(str)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
+	@Override
 	public int read(final int index, final String data) {
 		this.index = index;
 
-		int i = index;
+		string.append(commentPrefix);
+		int i = index + commentPrefix.length();
+
 		for (; i < data.length(); i++) {
 			char c = data.charAt(i);
-			if ('\r' == c || '\n' == c) {
+			if (isAnyMatch(c, '\r', '\n')) {
 				break;
 			}
 			string.append(c);
@@ -61,6 +67,7 @@ public class SingleLineCommentTokenReader extends CommentTokenReader {
 		return i;
 	}
 
+	@Override
 	public Token getToken() {
 		return new Token(index, string.toString(), this.getClass());
 	}

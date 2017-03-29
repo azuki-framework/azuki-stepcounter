@@ -1,3 +1,18 @@
+/**
+ * Copyright 2017 Azuki Framework.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.azkfw.comparison;
 
 import java.io.File;
@@ -11,7 +26,18 @@ import org.azkfw.stepcounter.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author kawakicchi
+ */
 public class Diff {
+
+	public static void main(final String[] args) throws IOException {
+		File file1 = new File(args[0]);
+		File file2 = new File(args[1]);
+
+		Diff diff = new Diff();
+		diff.diff(file1, file2);
+	}
 
 	public Diff() {
 
@@ -67,6 +93,16 @@ public class Diff {
 		List<Step> call = end.getStepList();
 		int x = 0;
 		int y = 0;
+
+		boolean diffFlg = false;
+		int cntBufInsert = 0;
+		int cntBufDelete = 0;
+
+		int cntMatch = 0;
+		int cntDiffChange = 0;
+		int cntDiffInsert = 0;
+		int cntDiffDelete = 0;
+
 		for (Step c : call) {
 			// logger.debug("{}x{}", c.x, c.y);
 
@@ -77,19 +113,59 @@ public class Diff {
 			if (0 == d && (c.x != 0)) {
 				// match
 				System.out.println(String.format("%s\t%s\t%s", "", lineX.get(c.x - 1), lineY.get(c.y - 1)));
-
+				if (diffFlg) {
+					diffFlg = false;
+					if (cntBufInsert == cntBufDelete) {
+						cntDiffChange += cntBufInsert;
+					} else if (cntBufInsert > cntBufDelete) {
+						cntDiffChange += cntBufDelete;
+						cntDiffInsert += cntBufInsert - cntBufDelete;
+					} else {
+						cntDiffChange += cntBufInsert;
+						cntDiffDelete += cntBufDelete - cntBufInsert;
+					}
+					cntBufInsert = 0;
+					cntBufDelete = 0;
+				}
+				cntMatch += 1;
 			} else if (1 == d) {
 				// insert
 				System.out.println(String.format("%s\t%s\t%s", "I", lineX.get(c.x - 1), ""));
+				if (!diffFlg) {
+					diffFlg = true;
+				}
+				cntBufInsert++;
 			} else if (-1 == d) {
 				// delete
 				System.out.println(String.format("%s\t%s\t%s", "D", "", lineY.get(c.y - 1)));
+				if (!diffFlg) {
+					diffFlg = true;
+				}
+				cntBufDelete++;
 			}
 
 			x = c.x;
 			y = c.y;
 		}
+		if (diffFlg) {
+			diffFlg = false;
+			if (cntBufInsert == cntBufDelete) {
+				cntDiffChange += cntBufInsert;
+			} else if (cntBufInsert > cntBufDelete) {
+				cntDiffChange += cntBufDelete;
+				cntDiffInsert += cntBufInsert - cntBufDelete;
+			} else {
+				cntDiffChange += cntBufInsert;
+				cntDiffDelete += cntBufDelete - cntBufInsert;
+			}
+			cntBufInsert = 0;
+			cntBufDelete = 0;
+		}
 
+		System.out.println(String.format("Match  : %d", cntMatch));
+		System.out.println(String.format("Change : %d", cntDiffChange));
+		System.out.println(String.format("Insert : %d", cntDiffInsert));
+		System.out.println(String.format("Delete : %d", cntDiffDelete));
 	}
 
 	private void bbb(final Step step, final Store store) {

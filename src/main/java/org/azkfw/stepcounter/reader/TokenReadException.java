@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.stepcounter.scanner;
+package org.azkfw.stepcounter.reader;
 
 /**
- * このインターフェースは、トークンスキャナ機能を定義したインターフェースです。
- *
- * @author Kawakicchi
+ * @author kawakicchi
  */
-public interface TokenScanner {
+public class TokenReadException extends Exception {
 
-	/**
-	 * スキャンする。
-	 */
-	void scan();
+	/** serialVersionUID */
+	private static final long serialVersionUID = 6079259426773744562L;
+
+	public TokenReadException(final String message, final TokenReader reader) {
+		super(message);
+	}
 }

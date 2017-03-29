@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.stepcounter.scanner;
+package org.azkfw.stepcounter.reader;
 
 /**
- * このインターフェースは、トークンスキャナ機能を定義したインターフェースです。
- *
- * @author Kawakicchi
+ * @author kawakicchi
  */
-public interface TokenScanner {
+public abstract class AbstractTokenReader implements TokenReader {
 
-	/**
-	 * スキャンする。
-	 */
-	void scan();
+	protected final boolean isAnyMatch(char chr, char... chrs) {
+		for (char c : chrs) {
+			if (c == chr) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected final boolean isGetting(final int size, final int index, final String data) {
+		return (data.length() > index + (size - 1));
+	}
 }

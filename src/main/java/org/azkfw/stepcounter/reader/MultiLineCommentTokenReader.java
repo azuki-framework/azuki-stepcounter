@@ -1,11 +1,9 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/**
+ * Copyright 2017 Azuki Framework.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -19,53 +17,67 @@ package org.azkfw.stepcounter.reader;
 
 import org.azkfw.stepcounter.token.Token;
 
+/**
+ * @author kawakicchi
+ */
 public class MultiLineCommentTokenReader extends CommentTokenReader {
 
 	private int index;
 
 	private StringBuffer string;
 
+	private final String commentPrefix;
+
+	private final String commentSuffix;
+
 	public MultiLineCommentTokenReader() {
+		commentPrefix = "/*";
+		commentSuffix = "*/";
 		clear();
 	}
 
+	public MultiLineCommentTokenReader(final String prefix, final String suffix) {
+		commentPrefix = prefix;
+		commentSuffix = suffix;
+		clear();
+	}
+
+	@Override
 	public void clear() {
 		index = -1;
 		string = new StringBuffer();
 	}
 
+	@Override
 	public boolean is(final int index, final String data) {
-		if (data.length() > index + 1) {
-
-			char c1 = data.charAt(index);
-			char c2 = data.charAt(index + 1);
-
-			if ('/' == c1 && '*' == c2) {
+		if (isGetting(commentPrefix.length(), index, data)) {
+			final String str = data.substring(index, index + commentPrefix.length());
+			if (commentPrefix.equals(str)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public int read(final int index, final String data) {
+	@Override
+	public int read(final int index, final String data) throws TokenReadException {
 		this.index = index;
 
-		string.append("/*");
+		string.append(commentPrefix);
+		int i = index + commentPrefix.length();
 
-		int i = index + 2;
-		for (; i < data.length() - 1; i++) {
-			char c1 = data.charAt(i);
-			char c2 = data.charAt(i + 1);
-			if ('*' == c1 && '/' == c2) {
-				string.append(c1);
-				string.append(c2);
-				return i + 2;
+		for (; isGetting(commentSuffix.length(), i, data); i++) {
+			final String str = data.substring(i, i + commentSuffix.length());
+			if (commentSuffix.equals(str)) {
+				string.append(commentSuffix);
+				return i + commentSuffix.length();
 			}
-			string.append(c1);
+			string.append(data.charAt(i));
 		}
-		return i + 1;
+		throw new TokenReadException("MultiLineComment Token reader error.[" + string + "...]", this);
 	}
 
+	@Override
 	public Token getToken() {
 		return new Token(index, string.toString(), this.getClass());
 	}

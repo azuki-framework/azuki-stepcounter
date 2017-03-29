@@ -13,17 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.stepcounter.scanner;
+package org.azkfw.stepcounter.selector;
+
+import java.io.File;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * このインターフェースは、トークンスキャナ機能を定義したインターフェースです。
- *
  * @author Kawakicchi
  */
-public interface TokenScanner {
+public class SingleFileSelector extends AbstractFileSelector {
 
-	/**
-	 * スキャンする。
-	 */
-	void scan();
+	private static final Logger logger = LoggerFactory.getLogger(SingleFileSelector.class);
+
+	private File file;
+
+	public SingleFileSelector(final File file) {
+		this.file = file;
+	}
+
+	@Override
+	protected void doSelect() {
+		callFindFile(file);
+	}
+
 }

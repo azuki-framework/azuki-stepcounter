@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.stepcounter.scanner;
+package org.azkfw.stepcounter.analyzer.java;
+
+import java.util.Collection;
+
+import org.azkfw.stepcounter.token.Token;
 
 /**
- * このインターフェースは、トークンスキャナ機能を定義したインターフェースです。
- *
- * @author Kawakicchi
+ * @author kawakicchi
  */
-public interface TokenScanner {
+public class PackageStatement extends Statement {
 
-	/**
-	 * スキャンする。
-	 */
-	void scan();
+	public PackageStatement(final Collection<Token> tokens) {
+		super(tokens);
+	}
+
 }

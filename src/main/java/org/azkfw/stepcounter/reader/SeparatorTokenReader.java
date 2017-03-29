@@ -1,11 +1,9 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/**
+ * Copyright 2017 Azuki Framework.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -17,44 +15,17 @@
  */
 package org.azkfw.stepcounter.reader;
 
-import org.azkfw.stepcounter.token.Token;
-
-public class SeparatorTokenReader implements TokenReader {
-
-	private int index;
-
-	private StringBuffer string;
+/**
+ * @author kawakicchi
+ */
+public class SeparatorTokenReader extends AbstractCharacterTokenReader {
 
 	public SeparatorTokenReader() {
-		clear();
+		super(new char[] { '.', ',', ';', '{', '}', '(', ')', '[', ']', '<', '>' });
 	}
 
-	public void clear() {
-		index = -1;
-		string = new StringBuffer();
+	public SeparatorTokenReader(final char... chars) {
+		super(chars);
 	}
 
-	public boolean is(final int index, final String data) {
-		if (data.length() > index) {
-
-			char c1 = data.charAt(index);
-			if ('.' == c1 || ',' == c1 || ';' == c1 || '{' == c1 || '}' == c1 || '(' == c1 || ')' == c1 || '<' == c1 || '>' == c1) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public int read(final int index, final String data) {
-		this.index = index;
-
-		char c1 = data.charAt(index);
-
-		string.append(c1);
-		return index + 1;
-	}
-
-	public Token getToken() {
-		return new Token(index, string.toString(), this.getClass());
-	}
 }

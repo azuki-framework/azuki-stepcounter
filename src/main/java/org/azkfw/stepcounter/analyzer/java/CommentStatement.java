@@ -13,35 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.stepcounter.reader;
+package org.azkfw.stepcounter.analyzer.java;
 
 import org.azkfw.stepcounter.token.Token;
 
 /**
  * @author kawakicchi
  */
-public interface TokenReader {
+public class CommentStatement extends Statement {
 
-	public void clear();
+	public CommentStatement() {
+	}
 
-	/**
-	 * 読み込み可能か判断する。
-	 * 
-	 * @param index 読み込み開始位置
-	 * @param data データ
-	 * @return 読み込み可能な場合、<code>true</code>を返す。
-	 */
-	public boolean is(final int index, final String data);
+	public CommentStatement(final Token token) {
+		super(token);
+	}
 
-	/**
-	 * 読み込みを行う。
-	 * 
-	 * @param index 読み込み開始位置
-	 * @param data データ
-	 * @return 読み込み終了位置
-	 * @exception TokenReadException 読み込み中に問題が発生した場合
-	 */
-	public int read(final int index, final String data) throws TokenReadException;
-
-	public Token getToken();
 }

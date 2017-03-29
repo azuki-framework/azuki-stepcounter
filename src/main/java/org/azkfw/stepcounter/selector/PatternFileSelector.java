@@ -1,11 +1,9 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/**
+ * Copyright 2017 Azuki Framework.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -22,9 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.azkfw.stepcounter.utils.AzukiUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author kawakicchi
+ */
 public class PatternFileSelector extends AbstractFileSelector {
 
 	public static void main(final String[] args) {
@@ -72,13 +74,13 @@ public class PatternFileSelector extends AbstractFileSelector {
 
 	public void addInclude(final String pattern) {
 		Pattern ptn = convertPattern(pattern);
-		logger.debug("Add include pattern -> " + ptn.pattern());
+		logger.debug("Add include pattern -> {}", ptn.pattern());
 		includes.add(ptn);
 	}
 
 	public void addExclude(final String pattern) {
 		Pattern ptn = convertPattern(pattern);
-		logger.debug("Add exclude pattern -> " + ptn.pattern());
+		logger.debug("Add exclude pattern -> {}", ptn.pattern());
 		excludes.add(ptn);
 	}
 
@@ -108,7 +110,7 @@ public class PatternFileSelector extends AbstractFileSelector {
 		String path = relativePath.replaceAll(rep, "/");
 
 		boolean match = false;
-		if (0 == includes.size()) {
+		if (AzukiUtil.isEmpty(includes)) {
 			match = true;
 		} else {
 			for (Pattern include : includes) {
@@ -129,13 +131,15 @@ public class PatternFileSelector extends AbstractFileSelector {
 		}
 
 		if (match) {
+			logger.debug("Match file -> {}", file.getAbsolutePath());
 			callFindFile(file);
+		} else {
+			logger.debug("UnMatch file -> {}", file.getAbsolutePath());
 		}
 
 	}
 
 	private void doDirectory(final File dir) {
-
 		File[] fs = dir.listFiles();
 		for (File f : fs) {
 			if (f.isFile()) {
@@ -144,7 +148,6 @@ public class PatternFileSelector extends AbstractFileSelector {
 				doDirectory(f);
 			}
 		}
-
 	}
 
 	private Pattern convertPattern(final String pattern) {

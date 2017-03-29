@@ -13,17 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.stepcounter.scanner;
+package org.azkfw.stepcounter.analyzer;
 
 /**
- * このインターフェースは、トークンスキャナ機能を定義したインターフェースです。
- *
- * @author Kawakicchi
+ * @author kawakicchi
  */
-public interface TokenScanner {
-
-	/**
-	 * スキャンする。
-	 */
-	void scan();
+public class SampleClass {
+	private String aa;
 }

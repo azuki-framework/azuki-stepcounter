@@ -1,11 +1,9 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/**
+ * Copyright 2017 Azuki Framework.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -17,6 +15,7 @@
  */
 package org.azkfw.stepcounter.scanner;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,27 +70,33 @@ public abstract class AbstractTokenScanner implements TokenScanner, TokenScanner
 	 *
 	 * @param token
 	 */
-	protected final void callFindToken(final Token token) {
+	protected final void callFindToken(final Token token, final File file) {
 		synchronized (listeners) {
-			for (TokenScannerListener l : listeners) {
-				l.tokenScannerFindToken(token, event);
-			}
+			listeners.forEach(listener -> listener.tokenScannerFindToken(token, file, event));
+		}
+	}
+
+	protected final void callStartedFile(final File file) {
+		synchronized (listeners) {
+			listeners.forEach(listener -> listener.tokenScannerStartedFile(file, event));
+		}
+	}
+
+	protected final void callFinishedFile(final File file) {
+		synchronized (listeners) {
+			listeners.forEach(listener -> listener.tokenScannerFinishedFile(file, event));
 		}
 	}
 
 	private void callStarted() {
 		synchronized (listeners) {
-			for (TokenScannerListener l : listeners) {
-				l.tokenScannerStarted(event);
-			}
+			listeners.forEach(listener -> listener.tokenScannerStarted(event));
 		}
 	}
 
 	private void callFinished() {
 		synchronized (listeners) {
-			for (TokenScannerListener l : listeners) {
-				l.tokenScannerFinished(event);
-			}
+			listeners.forEach(listener -> listener.tokenScannerFinished(event));
 		}
 	}
 

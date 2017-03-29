@@ -13,17 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.stepcounter.scanner;
+package org.azkfw.stepcounter.analyzer.java;
 
 /**
- * このインターフェースは、トークンスキャナ機能を定義したインターフェースです。
- *
- * @author Kawakicchi
+ * @author kawakicchi
  */
-public interface TokenScanner {
+public class IfStatement extends Statement {
 
-	/**
-	 * スキャンする。
-	 */
-	void scan();
+	private Statement condition;
+	private Statement process;
+
+	public IfStatement(final Statement condition, final Statement process) {
+		this.condition = condition;
+		this.process = process;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		s.append("if");
+		s.append(condition.toString());
+		s.append(process.toString());
+		return s.toString();
+	}
 }

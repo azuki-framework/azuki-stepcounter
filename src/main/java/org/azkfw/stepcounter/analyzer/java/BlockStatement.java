@@ -13,47 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.stepcounter.token;
+package org.azkfw.stepcounter.analyzer.java;
 
-import org.azkfw.stepcounter.reader.TokenReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author kawakicchi
  */
-public class Token {
+public class BlockStatement extends Statement {
 
-	private int index;
+	private final List<Statement> statements;
 
-	private String word;
-
-	private Class<? extends TokenReader> reader;
-
-	public Token(final int index, final String word) {
-		this.index = index;
-		this.word = word;
-		this.reader = null;
+	public BlockStatement() {
+		statements = new ArrayList<Statement>();
 	}
 
-	public Token(final int index, final String word, final Class<? extends TokenReader> reader) {
-		this.index = index;
-		this.word = word;
-		this.reader = reader;
+	public void addStatement(final Statement statement) {
+		statements.add(statement);
 	}
 
-	public int getIndex() {
-		return index;
-	}
-
-	public String getWord() {
-		return word;
-	}
-
-	public Class<? extends TokenReader> getReader() {
-		return reader;
+	public List<Statement> getStatements() {
+		return statements;
 	}
 
 	@Override
 	public String toString() {
-		return word;
+		StringBuilder s = new StringBuilder();
+
+		statements.forEach(stat -> {
+			if (0 < s.length()) {
+				s.append("\n");
+			}
+			s.append(stat.toString());
+		});
+
+		return s.toString();
 	}
 }
